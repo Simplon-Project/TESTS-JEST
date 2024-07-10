@@ -1,31 +1,69 @@
-/* EXAMPLE OF AN API REQUEST */
+const apiKey = '08cb792ca8906ae401dad848ccb6410d';
 
-/*
-let longitude = 44.83; // Bordeaux longitude
-let latitude = -0.57; // Bordeaux latitude
-let api_key = '891fcaaa0f613df11046ed15bd1a4607'; // Teacher's API Key
-let api_url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${api_key}`; // API URL
+const fetchData = async (cityName) => {
+  const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}`;
 
-const getWeather = () => {
-  axios.get(api_url)
-  .then((response)=>console.log(response.data.main.temp - 273.15))
-  .catch((err)=> console.log(err))
-}
-getWeather();
-*/
-
-
-
-
-export const fetchData = async () => {
-    // Your code here: Implement an API request (e.g., fetch data from a fictional API).
-  };
-  
-  // script.js
-  import { fetchData } from './ex4';
-  
-  function displayData() {
-    // Your code here: Fetch and display data from the API using fetchData.
+  try {
+    let response = await fetch(apiUrl);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    let data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Fetch error:', error);
+    return null;
   }
-  
-  document.addEventListener('DOMContentLoaded', displayData);
+};
+
+const formatWeatherData = (data) => {
+  const cityName = data.name;
+  const weatherDescription = data.weather[0].description;
+  const temperature = data.main.temp;
+  const humidity = data.main.humidity;
+  const pressure = data.main.pressure;
+  const windSpeed = data.wind.speed;
+
+  return `
+    Weather in ${cityName}: ${weatherDescription}
+    Temperature: ${temperature} K
+    Humidity: ${humidity}%
+    Pressure: ${pressure} hPa
+    Wind Speed: ${windSpeed} m/s
+  `;
+};
+
+const toggleWeatherData = async () => {
+  const cityName = 'Rennes'; // Exemple de nom de ville (peut être remplacé par un autre nom dynamiquement)
+
+  try {
+    const paragraph = document.getElementById('paragraph');
+
+    if (paragraph.textContent.trim() === '') {
+      // Afficher les données météo si le paragraphe est vide
+      let data = await fetchData(cityName);
+      if (data) {
+        const weatherInfo = formatWeatherData(data);
+        paragraph.textContent = weatherInfo;
+      }
+    } else {
+      // Masquer les données météo en effaçant le paragraphe
+      paragraph.textContent = '';
+    }
+  } catch (error) {
+    console.error('Error toggling weather data:', error);
+  }
+};
+
+// Écouteur d'événement pour charger le DOM
+document.addEventListener('DOMContentLoaded', () => {
+  const removeParagraphButton = document.getElementById('remove-paragraph-button');
+  removeParagraphButton.addEventListener('click', toggleWeatherData);
+});
+
+// Exporter les fonctions pour les tests
+module.exports = {
+  fetchData,
+  formatWeatherData,
+  toggleWeatherData
+};
